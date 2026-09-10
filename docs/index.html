@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFP-GS: Anchored foundation prior Gaussian splatting for surface reconstruction of built assets from three images</title>
+<meta name="description" content="Anchored foundation prior Gaussian splatting (AFP-GS) reconstructs the surface of built assets from three images by anchoring and recalibrating a foundation model point map inside the SparseSurf backbone.">
+<meta name="author" content="Tadesse G. Wakjira">
+<meta name="keywords" content="sparse view reconstruction, Gaussian splatting, foundation model prior, surface reconstruction, multiview stereo, built assets, DTU, AI4RISE Lab">
+<link rel="canonical" href="https://twakjira.github.io/AFP-GS/">
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="AFP-GS: Anchored foundation prior Gaussian splatting for surface reconstruction of built assets from three images">
+<meta property="og:description" content="A recalibrated foundation prior recovers the surface a sparse image set cannot constrain, with a mean Chamfer distance of 0.81 mm on the DTU three view benchmark.">
+<meta property="og:url" content="https://twakjira.github.io/AFP-GS/">
+<meta property="og:image" content="https://twakjira.github.io/AFP-GS/assets/fig01_architecture.jpg">
+<meta property="og:site_name" content="AFP-GS">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AFP-GS: surface reconstruction of built assets from three images">
+<meta name="twitter:description" content="Anchored and recalibrated foundation prior for sparse view Gaussian splatting, 0.81 mm mean Chamfer distance on DTU with three views.">
+<meta name="twitter:image" content="https://twakjira.github.io/AFP-GS/assets/fig01_architecture.jpg">
+
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/app.js" defer></script>
+</head>
+<body>
+
+<nav class="topnav" aria-label="Sections">
+  <a class="brand" href="#top"><span class="accent">AFP</span>-GS</a>
+  <div class="links">
+    <a class="navlink" href="#abstract">Abstract</a>
+    <a class="navlink" href="#method">Method</a>
+    <a class="navlink" href="#results">Results</a>
+    <a class="navlink" href="#explore">Explore</a>
+    <a class="navlink" href="#code">Code</a>
+    <a class="navlink" href="#citation">Citation</a>
+  </div>
+</nav>
+
+<div class="section title-section fadein" id="top">
+  <h1 class="project-title">
+    <span class="accent">AFP-GS</span>: Anchored foundation prior Gaussian splatting for surface reconstruction of built assets from three images
+  </h1>
+  <div class="authors">
+    <a href="https://www.ai4riselab.com" target="_blank" rel="noopener">Tadesse G. Wakjira</a><sup>1</sup>
+  </div>
+  <div class="affiliations">
+    <span><sup>1</sup>Kennesaw State University</span>
+  </div>
+  <div class="buttons-row">
+    <a class="pill pill-paper pill-disabled" href="#" onclick="return false;"><svg class="pill-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Paper</a>
+    <a class="pill pill-method" href="#method"><svg class="pill-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg>Method</a>
+    <a class="pill pill-code" href="https://github.com/twakjira/AFP-GS" target="_blank" rel="noopener noreferrer"><svg class="pill-icon" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>Code</a>
+    <a class="pill pill-data" href="https://roboimagedata.compute.dtu.dk/?page_id=36" target="_blank" rel="noopener noreferrer"><svg class="pill-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg>DTU dataset</a>
+    <a class="pill pill-data" href="https://github.com/yulunwu0108/FatesGS" target="_blank" rel="noopener noreferrer"><svg class="pill-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg>Three view split</a>
+  </div>
+</div>
+
+<div class="section reveal" id="abstract">
+  <h2>Abstract</h2>
+  <p class="abstract-text">
+    Surface reconstruction from three photographs fails on surface observed by one or two images,
+    where Gaussian splatting leaves holes. AFP-GS adds two modules to the SparseSurf backbone.
+    Foundation prior anchoring aligns a foundation model point map and supervises the
+    geometry where the images cannot, and anchored recalibration removes the depth offset of the prior.
+    On DTU the Chamfer distance falls from 1.18 mm to 0.81 mm, below every published result, and on
+    ETH3D built environments the F1 score at 5 cm against laser scans rises from 0.51 to 0.79.
+  </p>
+  <div class="metric-row">
+    <div class="metric-card primary"><div class="label">Chamfer distance, DTU</div><div class="value">0.81<span class="unit">mm</span></div></div>
+    <div class="metric-card"><div class="label">Best published method</div><div class="value">0.85<span class="unit">mm</span></div></div>
+    <div class="metric-card accent-green"><div class="label">F1 at 5 cm on laser scans, from 0.51</div><div class="value">0.79</div></div>
+    <div class="metric-card"><div class="label">Error prediction, AUC</div><div class="value">0.73</div></div>
+  </div>
+</div>
+
+<div class="section reveal" id="method">
+  <h2>Method</h2>
+  <figure class="architecture">
+    <img src="assets/fig01_architecture.jpg" alt="Architecture of anchored foundation prior Gaussian splatting">
+    <p class="caption">Grey blocks form the SparseSurf backbone, orange blocks foundation prior anchoring with the support attribute, and green blocks anchored recalibration.</p>
+  </figure>
+  <div class="module-list">
+    <p><strong>M1. Foundation prior anchoring.</strong>
+      The point map of a visual geometry grounded transformer is scaled to the scene through the
+      predicted camera centres, adds primitives where the multiview stereo cloud has none, and
+      supervises the rendered depth and normals.</p>
+    <p><strong>M2. Anchored recalibration.</strong>
+      A per view affine correction with a quadratic spatial offset is fitted to the multiview stereo
+      points before optimization and to the stereo depth of the backbone every 300 iterations, with
+      model selection by anchor residual.</p>
+    <p><strong>C1. Visibility weight.</strong>
+      The prior loss is doubled on surface observed by a single training view.</p>
+    <p><strong>C2. Confidence weight.</strong>
+      Pixels below the thirtieth confidence percentile receive no weight and pixels above the
+      ninetieth receive full weight.</p>
+    <p><strong>C3. Admissibility check.</strong>
+      A fitted correction is kept only when the median anchor residual is below one percent of the
+      median depth and the scale lies between 0.7 and 1.4.</p>
+    <p><strong>C4. Support attribute.</strong>
+      The count of views agreeing on the surface is exported for every output vertex and predicts
+      where the surface is wrong, without ground truth.</p>
+  </div>
+</div>
+
+<div class="section reveal" id="results">
+  <h2>Results</h2>
+  <p class="lead">Mean Chamfer distance in mm over the fifteen DTU scenes with three views. The reference
+    method is reproduced in the same workflow, so every comparison with it is paired by scene.</p>
+  <div class="two-col">
+    <div>
+      <p class="table-title">Little overlap protocol, views 22, 25, and 28</p>
+      <div class="table-wrap">
+        <table data-sortable data-lower="1">
+          <thead><tr><th>Method</th><th>Chamfer distance (mm)</th></tr></thead>
+          <tbody>
+            <tr><td>SparseCraft</td><td>1.83</td></tr>
+            <tr><td>UFORecon</td><td>1.40</td></tr>
+            <tr><td>FatesGS</td><td>1.37</td></tr>
+            <tr><td>NeuSurf</td><td>1.35</td></tr>
+            <tr><td>SparseSurf, reproduced</td><td>1.18</td></tr>
+            <tr><td>SparseRecon</td><td>1.06</td></tr>
+            <tr><td>SparseSurf, published</td><td>1.05</td></tr>
+            <tr><td>DP-GS</td><td>1.02</td></tr>
+            <tr><td>DP-GS with MASt3R initialization</td><td>0.85</td></tr>
+            <tr class="row-ours"><td>AFP-GS, proposed</td><td>0.81</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <p class="table-title">Large overlap protocol, views 23, 24, and 33</p>
+      <div class="table-wrap">
+        <table data-sortable data-lower="1">
+          <thead><tr><th>Method</th><th>Chamfer distance (mm)</th></tr></thead>
+          <tbody>
+            <tr><td>Sparse2DGS</td><td>1.13</td></tr>
+            <tr><td>C2F2NeUS</td><td>1.11</td></tr>
+            <tr><td>NeuSurf</td><td>0.99</td></tr>
+            <tr><td>UFORecon</td><td>0.99</td></tr>
+            <tr><td>FatesGS</td><td>0.92</td></tr>
+            <tr><td>SparseSurf, published</td><td>0.89</td></tr>
+            <tr><td>SparseSurf, reproduced</td><td>0.87</td></tr>
+            <tr class="row-ours"><td>AFP-GS, proposed</td><td>0.85</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <p class="table-title">Paired comparison with the reproduced reference method</p>
+  <div class="table-wrap">
+    <table data-sortable data-lower="1,2,3">
+      <thead><tr><th>Protocol and method</th><th>Accuracy (mm)</th><th>Completeness (mm)</th><th>Chamfer distance (mm)</th></tr></thead>
+      <tbody>
+        <tr><td>Little overlap, SparseSurf</td><td>1.03</td><td>1.32</td><td>1.18</td></tr>
+        <tr class="row-ours"><td>Little overlap, AFP-GS</td><td>0.60</td><td>1.02</td><td>0.81</td></tr>
+        <tr><td>Large overlap, SparseSurf</td><td>0.47</td><td>1.28</td><td>0.87</td></tr>
+        <tr class="row-ours"><td>Large overlap, AFP-GS</td><td>0.43</td><td>1.27</td><td>0.85</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="table-title">Built environments against terrestrial laser scans, ETH3D, three views</p>
+  <div class="table-wrap">
+    <table data-sortable>
+      <thead><tr><th>Scene</th><th>SparseSurf, F1 at 5 cm</th><th>AFP-GS, F1 at 5 cm</th></tr></thead>
+      <tbody>
+        <tr><td>kicker, indoor room</td><td>0.272</td><td>0.883</td></tr>
+        <tr><td>playground, outdoor play area</td><td>0.216</td><td>0.361</td></tr>
+        <tr><td>relief, stone relief</td><td>0.701</td><td>0.954</td></tr>
+        <tr><td>relief_2, stone relief</td><td>0.837</td><td>0.948</td></tr>
+        <tr class="row-ours"><td>Mean</td><td>0.506</td><td>0.786</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="table-note">Higher is better. The configuration is the one fixed on DTU, and no reconstruction is aligned to the scan.</p>
+
+  <div class="two-col">
+    <div>
+      <p class="table-title">Ablation, little overlap protocol</p>
+      <div class="table-wrap">
+        <table data-sortable data-lower="1">
+          <thead><tr><th>Configuration</th><th>Chamfer distance (mm)</th></tr></thead>
+          <tbody>
+            <tr><td>SparseSurf, reproduced</td><td>1.177</td></tr>
+            <tr><td>Raw prior, no recalibration</td><td>0.979</td></tr>
+            <tr><td>Initialization augmentation only</td><td>0.937</td></tr>
+            <tr><td>Prior loss only</td><td>0.942</td></tr>
+            <tr><td>Offline recalibration only</td><td>0.811</td></tr>
+            <tr><td>Without visibility weight</td><td>0.813</td></tr>
+            <tr class="row-ours"><td>AFP-GS, full</td><td>0.810</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <p class="table-title">Prior points against the reference scans</p>
+      <div class="table-wrap">
+        <table data-sortable data-lower="1,2">
+          <thead><tr><th>Point set</th><th>Little overlap</th><th>Large overlap</th></tr></thead>
+          <tbody>
+            <tr><td>Raw prior, scaled</td><td>1.27</td><td>1.68</td></tr>
+            <tr class="row-ours"><td>Recalibrated prior</td><td>0.82</td><td>1.01</td></tr>
+            <tr><td>Multiview stereo points</td><td>0.22</td><td>0.30</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Mean distance in mm to the reference scan over the fifteen scenes.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section wide reveal" id="explore">
+  <h2>Explore</h2>
+  <p class="lead">Drag the divider to wipe between the photograph and the selected frame. Tabs select the
+    protocol, thumbnails select the scene, and the button cycles the frames.</p>
+  <div class="viewer" id="viewer">
+    <div class="viewer-tabs"></div>
+    <div class="thumbs"></div>
+    <div class="frames"></div>
+    <div class="wipe">
+      <img class="bottom" src="assets/samples/little_0_ours.jpg" alt="Selected frame">
+      <img class="top" src="assets/samples/little_0_photo.jpg" alt="Photograph">
+      <div class="handle"></div>
+      <span class="label-left">Photograph</span>
+      <span class="label-right">AFP-GS</span>
+    </div>
+    <p class="viewer-caption"></p>
+    <div class="viewer-actions">
+      <button class="btn cycle" type="button">Cycle the frames</button>
+    </div>
+  </div>
+
+  <figure class="fig-full">
+    <img src="assets/fig13_eth3d_qualitative.jpg" alt="Reconstructions of four ETH3D built environments against laser scans">
+    <p class="caption">Four ETH3D built environments: photograph, laser scan, SparseSurf, and AFP-GS, coloured by the distance to the scan from 0 to 10 cm.</p>
+  </figure>
+  <figure class="fig-full">
+    <img src="assets/fig11_qualitative.jpg" alt="Qualitative comparison on four DTU scenes">
+    <p class="caption">Four DTU scenes: reference scan, SparseSurf, AFP-GS, and the distance to the scan from 0 to 2 mm.</p>
+  </figure>
+  <div class="fig-grid">
+    <figure>
+      <img src="assets/fig12_eth3d_fscore.jpg" alt="F1 score against tolerance on the ETH3D scenes">
+      <p class="caption">F1 score against tolerance on the laser scans.</p>
+    </figure>
+    <figure>
+      <img src="assets/fig14_reliability.jpg" alt="Support count as a reliability indicator">
+      <p class="caption">The support count predicts the surface error.</p>
+    </figure>
+    <figure>
+      <img src="assets/fig03_recalibration.jpg" alt="Recalibration of the prior on one view">
+      <p class="caption">Anchored recalibration on one view of scan 37.</p>
+    </figure>
+    <figure>
+      <img src="assets/fig02_support_maps.jpg" alt="Visibility weight maps">
+      <p class="caption">Visibility weight of the prior loss on scan 24.</p>
+    </figure>
+    <figure>
+      <img src="assets/fig06_cd_slopegraph.jpg" alt="Chamfer distance of every scene">
+      <p class="caption">Chamfer distance of every DTU scene.</p>
+    </figure>
+    <figure>
+      <img src="assets/fig10_ablation_heatmap.jpg" alt="Ablation heatmap">
+      <p class="caption">Ablation over the fifteen DTU scenes.</p>
+    </figure>
+  </div>
+</div>
+
+<div class="section reveal" id="code">
+  <h2>Code</h2>
+  <div class="callout"><strong>Status.</strong> The manuscript is under review and this repository holds
+    the project page only. The code, the configuration files, and the trained models follow on acceptance.</div>
+</div>
+
+<div class="section reveal" id="citation">
+  <h2>Citation</h2>
+<pre class="citation-block"><code>@article{wakjira2026afpgs,
+  title   = {Anchored foundation prior Gaussian splatting for surface
+             reconstruction of built assets from three images},
+  author  = {Wakjira, Tadesse G.},
+  journal = {Under Review},
+  year    = {2026}
+}</code></pre>
+</div>
+
+<footer class="footer">
+  Developed by the <a href="https://www.ai4riselab.com" target="_blank" rel="noopener">AI4RISE Lab</a>
+</footer>
+
+</body>
+</html>

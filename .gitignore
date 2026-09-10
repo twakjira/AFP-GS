@@ -1,0 +1,12 @@
+# everything that must not ship before acceptance
+code/
+configs/
+runs/
+results/
+data/
+Manuscript/
+figures/
+*.zip
+# markdown is ignored except the file the page needs
+*.md
+!README.md
